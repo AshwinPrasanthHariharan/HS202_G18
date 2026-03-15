@@ -1,26 +1,21 @@
-from pydrive2.auth import GoogleAuth
-from pydrive2.drive import GoogleDrive
 import shutil
+import hashlib
 
-DATASET_DIR = "dataset"
-ZIP_FILE = "dataset.zip"
-FILE_ID = "1g-FZzbF0DrDnuMsVXcWh5t3xKAJ9b-N1"
+print("Creating dataset zip...")
 
-print("Zipping dataset...")
+shutil.make_archive("dataset", "zip", "dataset")
 
-shutil.make_archive("dataset", "zip", DATASET_DIR)
+def sha256(file_path):
+    h = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
-print("Authenticating...")
+hash_value = sha256("dataset.zip")
 
-gauth = GoogleAuth()
-gauth.LocalWebserverAuth()
+with open("dataset.sha256", "w") as f:
+    f.write(hash_value)
 
-drive = GoogleDrive(gauth)
-
-print("Uploading dataset...")
-
-file = drive.CreateFile({'id': FILE_ID})
-file.SetContentFile(ZIP_FILE)
-file.Upload()
-
-print("Dataset pushed to Google Drive.")
+print("Checksum updated:", hash_value)
+print("Upload dataset.zip to Google Drive and replace old file.")
