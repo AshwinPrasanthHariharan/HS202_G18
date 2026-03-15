@@ -19,3 +19,4 @@ with open("dataset.sha256", "w") as f:
 
 print("Checksum updated:", hash_value)
 print("Upload dataset.zip to Google Drive and replace old file.")
+print("Link: https://drive.google.com/drive/folders/1CjpIhF7LBYsFMFngy_TTkUxclgdYSyXX?usp=drive_link")
