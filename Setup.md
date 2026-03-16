@@ -39,6 +39,101 @@ If you're using Windows, you'll need Windows Subsystem for Linux (WSL) to run Li
 
 **Troubleshooting:** If you have issues, visit the [official WSL documentation](https://docs.microsoft.com/en-us/windows/wsl/install) for detailed help.
 
+### Advanced WSL Setup Guidelines
+
+#### Choosing a Specific WSL Distribution
+
+The default `wsl --install` installs Ubuntu, but you can choose other distributions:
+
+1. **List available distributions:**
+   ```powershell
+   wsl --list --online
+   ```
+
+2. **Install a specific distribution (e.g., Ubuntu 22.04):**
+   ```powershell
+   wsl --install -d Ubuntu-22.04
+   ```
+
+3. **Set a default distribution:**
+   ```powershell
+   wsl --set-default Ubuntu-22.04
+   ```
+
+#### Setting Up SSH Keys for GitHub
+
+To clone repositories using SSH (recommended for security):
+
+1. **Generate SSH key in WSL:**
+   ```bash
+   ssh-keygen -t ed25519 -C "your_email@example.com"
+   ```
+
+2. **Add the key to ssh-agent:**
+   ```bash
+   eval "$(ssh-agent -s)"
+   ssh-add ~/.ssh/id_ed25519
+   ```
+
+3. **Copy the public key:**
+   ```bash
+   cat ~/.ssh/id_ed25519.pub
+   ```
+
+4. **Add the key to your GitHub account:**
+   - Go to GitHub.com → Settings → SSH and GPG keys → New SSH key
+   - Paste the public key and save
+
+5. **Test the connection:**
+   ```bash
+   ssh -T git@github.com
+   ```
+
+#### Installing Essential Tools
+
+Once in WSL, install common development tools:
+
+```bash
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y build-essential git curl wget vim nano htop tree
+```
+
+#### Configuring Your Environment
+
+1. **Set up your shell (optional, but recommended):**
+   ```bash
+   # Install zsh and oh-my-zsh
+   sudo apt install zsh
+   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+   chsh -s $(which zsh)
+   ```
+
+   **Why zsh?** This project recommends using the `zsh` shell for the best experience. The provided dotfiles include configuration for `zsh` and related tools.
+
+2. **Configure Git:**
+   ```bash
+   git config --global user.name "Your Name"
+   git config --global user.email "your_email@example.com"
+   ```
+
+#### Performance Tips
+
+- **Store project files in WSL filesystem** (not Windows filesystem) for better performance
+- **Use WSL 2** (default in recent versions) for better performance
+- **Enable systemd** (if needed) by editing `/etc/wsl.conf`:
+  ```
+  [boot]
+  systemd=true
+  ```
+
+#### Common Issues and Solutions
+
+- **WSL not starting:** Run `wsl --shutdown` then `wsl` in PowerShell
+- **Permission denied errors:** Use `sudo` for system operations
+- **Slow performance:** Ensure you're using WSL 2 and store files in the Linux filesystem
+- **Network issues:** Restart WSL with `wsl --shutdown` and `wsl`
+- **GUI applications:** Install X11 server on Windows (like VcXsrv) for Linux GUI apps
+
 ## Installing Pixi
 
 Pixi is a modern package manager that handles Python environments and dependencies. It's faster and simpler than traditional tools like conda or pip.
@@ -198,4 +293,42 @@ python gd_push.py
 - **Git setup:** Ensure you have Git installed and configured with SSH keys for GitHub access
 - **GDD CLI:** The GDD CLI utils provide additional command-line tools for Google Drive operations. See `pixi run gdd --help` for more information
 - **Troubleshooting:** If you encounter issues, check the [Pixi documentation](https://pixi.sh/) or create an issue in the repository
+<<<<<<< HEAD
 - **Updates:** To update dependencies later, run `pixi install` again after pulling repository changes
+=======
+- **Updates:** To update dependencies later, run `pixi install` again after pulling repository changes
+
+## Using the Recommended Dotfiles
+
+For a smoother and more productive development experience, we recommend using the custom dotfiles from [AshwinPrasanthHariharan/dotfiles](https://github.com/AshwinPrasanthHariharan/dotfiles).
+
+### Why Use These Dotfiles?
+- Pre-configured settings for bash, vim, git, and other tools
+- Useful aliases and functions to speed up your workflow
+- Consistent environment across machines
+
+### How to Set Up
+
+1. **Clone the dotfiles repository:**
+   ```bash
+   git clone git@github.com:AshwinPrasanthHariharan/dotfiles.git ~/dotfiles
+   ```
+
+2. **Run the setup script (if available):**
+   ```bash
+   cd ~/dotfiles
+   ./install.sh
+   ```
+   *If there is no install script, follow the instructions in the repository’s README to manually link or copy the files.*
+
+3. **Restart your terminal** to apply the new settings.
+
+### Customization
+
+- You can edit the dotfiles (like `.bashrc`, `.vimrc`, etc.) in the `~/dotfiles` directory to suit your preferences.
+- If you update your dotfiles, re-run the setup script or re-source your shell configuration.
+
+### More Info
+
+See the [dotfiles repository README](https://github.com/AshwinPrasanthHariharan/dotfiles) for details and troubleshooting.
+>>>>>>> 2561a24 (updated setup.md)
