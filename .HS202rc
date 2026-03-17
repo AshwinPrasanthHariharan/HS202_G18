@@ -2,6 +2,6 @@
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-export PATH="$PATH:$REPO_DIR"
+export PATH="$PATH:$REPO_DIR/gd_utils"
 
 echo "HS202 environment loaded"
