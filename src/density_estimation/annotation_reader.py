@@ -107,3 +107,15 @@ def get_head_points(mat_file: str | Path | dict[str, Any]) -> list[tuple[float, 
 
 	return [(float(x), float(y)) for x, y in points]
 
+
+class AnnotationReader:
+	"""Lightweight wrapper for loading ShanghaiTech annotation files."""
+
+	@staticmethod
+	def load_mat_annotations(path: str | Path) -> dict[str, Any]:
+		return load_mat_annotations(path)
+
+	@staticmethod
+	def get_head_points(mat_file: str | Path | dict[str, Any]) -> list[tuple[float, float]]:
+		return get_head_points(mat_file)
+

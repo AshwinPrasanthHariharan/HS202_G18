@@ -73,3 +73,47 @@ def get_centers_from_boxes(boxes: np.ndarray) -> list[tuple[float, float]]:
 	centers = np.stack((cx, cy), axis=1)
 	return [(float(x), float(y)) for x, y in centers]
 
+
+class YoloDetector:
+	"""Simple YOLO object detector wrapper for person detection."""
+
+	def __init__(
+		self,
+		model_path: str = "yolov8n.pt",
+		conf: float = 0.25,
+		iou: float = 0.45,
+		classes: tuple[int, ...] | None = (0,),
+		device: str | None = None,
+	) -> None:
+		self.model_path = model_path
+		self.conf = conf
+		self.iou = iou
+		self.classes = classes
+		self.device = device
+		self.model = self._load_model()
+
+	def _load_model(self) -> Any:
+		try:
+			from ultralytics import YOLO
+		except ImportError as exc:
+			raise ImportError(
+				"ultralytics is required for YOLO detection. "
+				"Install with `pip install ultralytics`."
+			) from exc
+		return YOLO(self.model_path)
+
+	def detect(self, image: str | Path | np.ndarray) -> np.ndarray:
+		"""Run detection and return xyxy bounding boxes."""
+		return run_yolo_detection(
+			image=image,
+			model=self.model,
+			conf=self.conf,
+			iou=self.iou,
+			classes=self.classes,
+			device=self.device,
+		)
+
+	def get_centers(self, image: str | Path | np.ndarray) -> list[tuple[float, float]]:
+		boxes = self.detect(image)
+		return get_centers_from_boxes(boxes)
+

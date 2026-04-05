@@ -185,6 +185,54 @@ def process_image_directory(
 	return output
 
 
+class DensityCalculator:
+	"""Convenience wrapper for density estimation operations."""
+
+	def __init__(
+		self,
+		grid: dict[str, tuple[float, float, float, float]],
+		normalize: bool = False,
+		normalization_mode: str = "area",
+	) -> None:
+		self.grid = grid
+		self.normalize = normalize
+		self.normalization_mode = normalization_mode
+
+	def process_frame(
+		self,
+		image_path: str | Path,
+		annotation_path: str | Path | None = None,
+		use_yolo: bool = False,
+		yolo_kwargs: dict[str, Any] | None = None,
+	) -> dict[str, Any]:
+		return process_frame_density(
+			image_path=image_path,
+			annotation_path=annotation_path,
+			grid=self.grid,
+			use_yolo=use_yolo,
+			yolo_kwargs=yolo_kwargs,
+			normalize=self.normalize,
+			normalization_mode=self.normalization_mode,
+		)
+
+	def process_directory(
+		self,
+		images_dir: str | Path,
+		annotations_dir: str | Path | None = None,
+		use_yolo: bool = False,
+		yolo_kwargs: dict[str, Any] | None = None,
+	) -> dict[str, dict[str, int] | dict[str, float]]:
+		return process_image_directory(
+			images_dir=images_dir,
+			grid=self.grid,
+			annotations_dir=annotations_dir,
+			use_yolo=use_yolo,
+			yolo_kwargs=yolo_kwargs,
+			normalize=self.normalize,
+			normalization_mode=self.normalization_mode,
+		)
+
+
 def get_shanghaitech_split_paths(
 	dataset_root: str | Path = DEFAULT_SHANGHAITECH_ROOT,
 	part: str = "A",

@@ -17,6 +17,14 @@ from .motion_utils import (
     draw_magnitude_heatmap, draw_flow_arrows, overlay_heatmap_on_frame
 )
 
+# Import density functions
+try:
+    from ..density_estimation import draw_density_debug, compute_density_map
+except ImportError:
+    # Fallback if density_estimation not available
+    draw_density_debug = None
+    compute_density_map = None
+
 
 def build_zone_speed_map(magnitude: np.ndarray, rows: int, cols: int) -> np.ndarray:
     """
@@ -51,12 +59,13 @@ def build_zone_speed_map(magnitude: np.ndarray, rows: int, cols: int) -> np.ndar
 
 def process(source: str, display: bool = True, save_frames: bool = None,
             output_dir: str = None, start_idx: int = 0, end_idx: int = None,
-            skip_frames: int = 1) -> dict:
+            skip_frames: int = 1, density_data: Optional[Dict[int, list]] = None) -> dict:
     """
     Optimized processing loop for frame sequences.
     
     Computes optical flow, magnitude, zone speeds, and generates visualization panels.
     Saves 2×2 combined panel (original, heatmap, flow arrows, zone overlay) to output directory.
+    If density_data provided, includes density heatmap in the visualization.
     
     Args:
         source: Path to image directory
@@ -66,6 +75,7 @@ def process(source: str, display: bool = True, save_frames: bool = None,
         start_idx: Start processing from this frame index (0-based)
         end_idx: End processing at this frame index (inclusive)
         skip_frames: Process every nth frame (default 1 = all frames)
+        density_data: Optional dict mapping frame index to list of (x,y) points for density overlay
     
     Returns:
         Dictionary with processing statistics
@@ -123,10 +133,31 @@ def process(source: str, display: bool = True, save_frames: bool = None,
                 flow_viz = draw_flow_arrows(curr_frame.copy(), flow)
                 zone_viz = draw_zone_overlay(curr_frame.copy(), zone_speed, SPEED_MIN, SPEED_MAX)
                 
-                # Create 2×2 panel: heatmap overlay | flow arrows
-                #                   zone overlay      | original
-                top_row = np.hstack([heatmap_overlaid, flow_viz])
-                bottom_row = np.hstack([zone_viz, curr_frame])
+                # Create density overlay if data available
+                if density_data and frame_count in density_data and draw_density_debug:
+                    points = density_data[frame_count]
+                    # Create grid for density (same as motion grid)
+                    h, w = curr_frame.shape[:2]
+                    grid = {}
+                    for r in range(GRID_ROWS):
+                        for c in range(GRID_COLS):
+                            grid[f'z{r*GRID_COLS + c}'] = (
+                                c * (w // GRID_COLS),
+                                r * (h // GRID_ROWS),
+                                (c + 1) * (w // GRID_COLS) if c < GRID_COLS - 1 else w,
+                                (r + 1) * (h // GRID_ROWS) if r < GRID_ROWS - 1 else h,
+                            )
+                    density_result = compute_density_map(points, grid, f'frame_{frame_count}', normalize=False)
+                    density_overlay = draw_density_debug(
+                        curr_frame.copy(), grid, points, density_result['zone_density'], show_zone_counts=True
+                    )
+                else:
+                    density_overlay = curr_frame.copy()  # Fallback to original frame
+                
+                # Create 2×2 panel: density overlay | flow arrows
+                #                   zone overlay     | motion heatmap
+                top_row = np.hstack([density_overlay, flow_viz])
+                bottom_row = np.hstack([zone_viz, heatmap_overlaid])
                 panel = np.vstack([top_row, bottom_row])
                 
                 # if requested
