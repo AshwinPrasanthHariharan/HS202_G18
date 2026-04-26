@@ -32,3 +32,8 @@ data/
 *.gz
 *.sha256
 *.md5
+/hs_venv
+
+# frontend
+node_modules/
+dist/
